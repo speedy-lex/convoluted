@@ -1,11 +1,11 @@
 pub trait CostFunction<P, E> {
     fn cost(predicted: &P, expected: &E) -> f32;
-    fn derivative(predicted: &P, expected: &E) -> Vec<f32>;
+    fn derivative(predicted: &P, expected: &E) -> P;
 }
 
 pub struct Mse;
-impl CostFunction<Vec<f32>, Vec<f32>> for Mse {
-    fn cost(predicted: &Vec<f32>, expected: &Vec<f32>) -> f32 {
+impl<const I: usize> CostFunction<[f32; I], [f32; I]> for Mse {
+    fn cost(predicted: &[f32; I], expected: &[f32; I]) -> f32 {
         let mut result = 0.0;
         for (p, e) in predicted.iter().zip(expected) {
             result += (*p - *e).powi(2)
@@ -13,10 +13,10 @@ impl CostFunction<Vec<f32>, Vec<f32>> for Mse {
         result
     }
 
-    fn derivative(predicted: &Vec<f32>, expected: &Vec<f32>) -> Vec<f32> {
-        let mut result = Vec::with_capacity(predicted.len());
-        for (p, e) in predicted.iter().zip(expected) {
-            result.push(2.0 * (*p - *e));
+    fn derivative(predicted: &[f32; I], expected: &[f32; I]) -> [f32; I] {
+        let mut result = [0.0; I];
+        for (r, (p, e)) in result.iter_mut().zip(predicted.iter().zip(expected)) {
+            *r = 2.0 * (*p - *e);
         }
         result
     }
@@ -24,25 +24,25 @@ impl CostFunction<Vec<f32>, Vec<f32>> for Mse {
 
 pub struct CrossEntropy;
 impl CrossEntropy {
-    fn softmax(values: &[f32]) -> Vec<f32> {
-        let mut result = Vec::with_capacity(values.len());
+    fn softmax<const I: usize>(values: &[f32; I]) -> [f32; I] {
+        let mut result = [0.0; I];
         let mut total = 0.0;
         for value in values {
             total += value.exp();
         }
-        for value in values {
-            result.push(value.exp() / total);
+        for (r, value) in result.iter_mut().zip(values) {
+            *r = value.exp() / total;
         }
         result
     }
 }
-impl CostFunction<Vec<f32>, usize> for CrossEntropy {
-    fn cost(predicted: &Vec<f32>, expected: &usize) -> f32 {
+impl<const I: usize> CostFunction<[f32; I], usize> for CrossEntropy {
+    fn cost(predicted: &[f32; I], expected: &usize) -> f32 {
         -Self::softmax(predicted)[*expected].ln()
     }
 
-    fn derivative(predicted: &Vec<f32>, expected: &usize) -> Vec<f32> {
-        debug_assert!(predicted.len() > *expected);
+    fn derivative(predicted: &[f32; I], expected: &usize) -> [f32; I] {
+        debug_assert!(I > *expected);
         let mut softmax = Self::softmax(predicted);
         softmax[*expected] -= 1.0;
         softmax
