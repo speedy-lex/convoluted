@@ -1,5 +1,9 @@
 use std::marker::PhantomData;
 
+pub mod dense;
+pub mod relu;
+pub mod sigmoid;
+
 pub trait Layer<I> {
     type Output;
 
