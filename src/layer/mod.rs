@@ -1,33 +1,41 @@
 use std::marker::PhantomData;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 pub mod dense;
 pub mod relu;
 pub mod sigmoid;
 
 pub trait Layer<I> {
     type Output;
+    type ForwardData;
+    type Gradients;
 
-    fn forward(&mut self, input: I) -> Self::Output;
-    fn backward(&mut self, forward: Self::Output) -> I;
-    fn apply_gradients(&mut self, multiplier: f32);
-    fn clear_gradients(&mut self);
+    fn forward(&mut self, input: I) -> (Self::Output, Self::ForwardData);
+    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients);
+    fn apply_gradients(&mut self, gradients: Self::Gradients, multiplier: f32);
 }
 impl<I> Layer<I> for () {
     type Output = I;
-
-    fn forward(&mut self, input: I) -> Self::Output {
-        input
+    type ForwardData = ();
+    type Gradients = ();
+    
+    #[inline(always)]
+    fn forward(&mut self, input: I) -> (I, ()) {
+        (input, ())
     }
 
-    fn backward(&mut self, forward: Self::Output) -> I {
-        forward
+    #[inline(always)]
+    fn backward(&mut self, forward: Self::Output, _forward_data: Self::ForwardData) -> (I, Self::Gradients) {
+        (forward, ())
     }
     
-    fn apply_gradients(&mut self, _multiplier: f32) {}
-    
-    fn clear_gradients(&mut self) {}
+    #[inline(always)]
+    fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct LayerChain<S, N, I> {
     pub step: S,
     pub next: N,
@@ -59,27 +67,25 @@ where
     N: Layer<S::Output>,
 {
     type Output = N::Output;
+    type ForwardData = (S::ForwardData, N::ForwardData);
+    type Gradients = (S::Gradients, N::Gradients);
 
     #[inline]
-    fn forward(&mut self, input: I) -> Self::Output {
+    fn forward(&mut self, input: I) -> (Self::Output, Self::ForwardData) {
         let intermediate = self.step.forward(input);
-        self.next.forward(intermediate)
+        let output = self.next.forward(intermediate.0);
+        (output.0, (intermediate.1, output.1))
     }
     #[inline]
-    fn backward(&mut self, forward: Self::Output) -> I {
-        let intermediate = self.next.backward(forward);
-        self.step.backward(intermediate)
-    }
-    
-    #[inline]
-    fn apply_gradients(&mut self, multiplier: f32) {
-        self.step.apply_gradients(multiplier);
-        self.next.apply_gradients(multiplier);
+    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients) {
+        let intermediate = self.next.backward(forward, forward_data.1);
+        let output = self.step.backward(intermediate.0, forward_data.0);
+        (output.0, (output.1, intermediate.1))
     }
     
     #[inline]
-    fn clear_gradients(&mut self) {
-        self.step.clear_gradients();
-        self.next.clear_gradients();
+    fn apply_gradients(&mut self, gradients: Self::Gradients, multiplier: f32) {
+        self.step.apply_gradients(gradients.0, multiplier);
+        self.next.apply_gradients(gradients.1, multiplier);
     }
 }

@@ -1,62 +1,70 @@
-
 use rand::{rng, Rng};
+
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+#[cfg(feature = "serde")]
+use serde_with::serde_as;
 
 use super::Layer;
 
-#[derive(Clone, Copy)]
+#[cfg(feature = "serde")]
+#[serde_as]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct DenseLayer<const I: usize, const O: usize> {
-    weights: [[f32; I]; O],
-    biases: [f32; O],
+    #[serde_as(as = "Box<[[_; I]; O]>")]
+    weights: Box<[[f32; I]; O]>,
+    #[serde_as(as = "Box<[_; O]>")]
+    biases: Box<[f32; O]>,
+}
 
-    input: [f32; I],
-    weight_gradients: [[f32; I]; O],
-    bias_gradients: [f32; O],
+#[cfg(not(feature = "serde"))]
+#[derive(Clone)]
+pub struct DenseLayer<const I: usize, const O: usize> {
+    weights: Box<[[f32; I]; O]>,
+    biases: Box<[f32; O]>,
 }
 impl<const I: usize, const O: usize> Layer<[f32; I]> for DenseLayer<I, O> {
     type Output = [f32; O];
+    type ForwardData = [f32; I];
+    type Gradients = Box<([[f32; I]; O], [f32; O])>;
 
-    fn forward(&mut self, input: [f32; I]) -> Self::Output {
-        self.input = input;
-        let mut output = self.biases;
+    fn forward(&mut self, input: [f32; I]) -> (Self::Output, Self::ForwardData) {
+        let forward_data = input;
+        let mut output = *self.biases;
         for (i, node) in output.iter_mut().enumerate() {
-            for (j, input) in self.input.iter().enumerate() {
+            for (j, input) in input.iter().enumerate() {
                 *node += self.weights[i][j] * input;
             }
         }
-        output
+        (output, forward_data)
     }
 
-    fn backward(&mut self, forward: Self::Output) -> [f32; I] {
-        for (i, bias) in self.bias_gradients.iter_mut().enumerate() {
+    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> ([f32; I], Self::Gradients) {
+        let mut gradients = Box::new(([[0.0; I]; O], [0.0; O]));
+        for (i, bias) in gradients.1.iter_mut().enumerate() {
             *bias += forward[i];
         }
         let mut output = [0.0; I];
         #[allow(clippy::needless_range_loop)]
         for i in 0..I {
             for o in 0..O {
-                self.weight_gradients[o][i] += self.input[i] * forward[o];
+                gradients.0[o][i] += forward_data[i] * forward[o];
                 output[i] += self.weights[o][i] * forward[o];
             }
         }
-        output
+        (output, gradients)
     }
 
-    fn apply_gradients(&mut self, multiplier: f32) {
-        for (bias, gradient) in self.biases.iter_mut().zip(&self.bias_gradients) {
+    fn apply_gradients(&mut self, gradients: Self::Gradients, multiplier: f32) {
+        for (bias, gradient) in self.biases.iter_mut().zip(gradients.1.as_ref()) {
             *bias += *gradient * multiplier;
         }
-        for (node, gradients) in self.weights.iter_mut().zip(&self.weight_gradients) {
+        for (node, gradients) in self.weights.iter_mut().zip(gradients.0.as_ref()) {
             for (weight, gradient) in node.iter_mut().zip(gradients) {
                 *weight += *gradient * multiplier;
             }
         }
     }
-
-    fn clear_gradients(&mut self) {
-        self.bias_gradients = [0.0; O];
-        self.weight_gradients = [[0.0; I]; O];
-    }
-
 }
 
 impl<const I: usize, const O: usize> DenseLayer<I, O> {
@@ -66,12 +74,12 @@ impl<const I: usize, const O: usize> DenseLayer<I, O> {
 
     pub fn random() -> Self {
         let mut rng = rng();
-        let mut biases = [0.0; O];
-        for bias in &mut biases {
+        let mut biases = Box::new([0.0; O]);
+        for bias in biases.iter_mut() {
             *bias = rng.random::<f32>() * 2.0 - 1.0;
         }
-        let mut weights = [[0.0; I]; O];
-        for node in &mut weights {
+        let mut weights = Box::new([[0.0; I]; O]);
+        for node in weights.iter_mut() {
             for weight in node {
                 *weight = rng.random::<f32>() * 2.0 - 1.0;
             }
@@ -79,9 +87,6 @@ impl<const I: usize, const O: usize> DenseLayer<I, O> {
         Self {
             weights,
             biases,
-            input: [0.0; I],
-            weight_gradients: [[0.0; I]; O],
-            bias_gradients: [0.0; O],
         }
     }
 }
@@ -89,11 +94,8 @@ impl<const I: usize, const O: usize> DenseLayer<I, O> {
 impl<const I: usize, const O: usize> Default for DenseLayer<I, O> {
     fn default() -> Self {
         Self {
-            weights: [[0.0; I]; O],
-            biases: [0.0; O],
-            input: [0.0; I],
-            weight_gradients: [[0.0; I]; O],
-            bias_gradients: [0.0; O],
+            weights: Box::new([[0.0; I]; O]),
+            biases: Box::new([0.0; O]),
         }
     }
 }
