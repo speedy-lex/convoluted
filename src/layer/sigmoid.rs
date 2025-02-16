@@ -1,9 +1,15 @@
 use super::Layer;
 
-#[derive(Clone, Copy)]
-pub struct SigmoidLayer<const I: usize> {
-    input: [f32; I]
-}
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "serde")]
+#[derive(Clone, Copy, Default, Serialize, Deserialize)]
+pub struct SigmoidLayer<const I: usize>;
+
+#[cfg(not(feature = "serde"))]
+#[derive(Clone, Copy, Default)]
+pub struct SigmoidLayer<const I: usize>;
 
 impl<const I: usize> SigmoidLayer<I> {
     #[inline(always)]
@@ -17,34 +23,29 @@ impl<const I: usize> SigmoidLayer<I> {
     }
 
     pub fn new() -> Self {
-        Self::default()
-    }
-}
-impl<const I: usize> Default for SigmoidLayer<I> {
-    fn default() -> Self {
-        Self { input: [0.0; I] }
+        Self
     }
 }
 
 impl<const I: usize> Layer<[f32; I]> for SigmoidLayer<I> {
     type Output = [f32; I];
+    type ForwardData = [f32; I];
+    type Gradients = ();
 
-    fn forward(&mut self, mut input: [f32; I]) -> Self::Output {
-        self.input = input;
+    fn forward(&mut self, mut input: [f32; I]) -> (Self::Output, Self::ForwardData) {
+        let forward_data = input;
         for x in input.iter_mut() {
             *x = Self::activate(*x);
         }
-        input
+        (input, forward_data)
     }
 
-    fn backward(&mut self, mut forward: Self::Output) -> [f32; I] {
-        for (forward, input) in forward.iter_mut().zip(&self.input) {
+    fn backward(&mut self, mut forward: Self::Output, forward_data: Self::ForwardData) -> ([f32; I], Self::Gradients) {
+        for (forward, input) in forward.iter_mut().zip(&forward_data) {
             *forward *= Self::derivate(*input);
         }
-        forward
+        (forward, ())
     }
 
-    fn apply_gradients(&mut self, _multiplier: f32) {}
-
-    fn clear_gradients(&mut self) {}
+    fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
