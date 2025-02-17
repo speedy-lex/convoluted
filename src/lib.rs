@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 #[cfg(feature = "bincode")]
 use std::{path::Path, fs::write, fs::read};
+use array::Array1D;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +10,7 @@ use crate::{cost::CostFunction, layer::Layer};
 
 pub mod cost;
 pub mod layer;
+pub mod array;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone)]
@@ -30,7 +32,7 @@ impl<I, C: CostFunction<L::Output, E>, E, L: Layer<I>> Network<I, L, C, L::Outpu
         }
     }
 }
-impl<I, L: Layer<I, Output = [f32; N]>, C: CostFunction<L::Output, E>, E, const N: usize> Network<I, L, C, L::Output, E> {
+impl<I, L: Layer<I, Output = Array1D<N>>, C: CostFunction<L::Output, E>, E, const N: usize> Network<I, L, C, L::Output, E> {
     pub fn forward(&mut self, input: I) -> (L::Output, L::ForwardData) {
         self.layer.forward(input)
     }
