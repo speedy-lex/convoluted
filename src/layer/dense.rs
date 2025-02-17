@@ -2,35 +2,32 @@ use rand::{rng, Rng};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "serde")]
-use serde_with::serde_as;
+
+use crate::array::{Array1D, Array2D};
 
 use super::Layer;
 
 #[cfg(feature = "serde")]
-#[serde_as]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct DenseLayer<const I: usize, const O: usize> {
-    #[serde_as(as = "Box<[[_; I]; O]>")]
-    weights: Box<[[f32; I]; O]>,
-    #[serde_as(as = "Box<[_; O]>")]
-    biases: Box<[f32; O]>,
+    weights: Array2D<I, O>,
+    biases: Array1D<O>,
 }
 
 #[cfg(not(feature = "serde"))]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct DenseLayer<const I: usize, const O: usize> {
-    weights: Box<[[f32; I]; O]>,
-    biases: Box<[f32; O]>,
+    weights: Array2D<I, O>,
+    biases: Array1D<O>,
 }
-impl<const I: usize, const O: usize> Layer<[f32; I]> for DenseLayer<I, O> {
-    type Output = [f32; O];
-    type ForwardData = [f32; I];
-    type Gradients = Box<([[f32; I]; O], [f32; O])>;
+impl<const I: usize, const O: usize> Layer<Array1D<I>> for DenseLayer<I, O> {
+    type Output = Array1D<O>;
+    type ForwardData = Array1D<I>;
+    type Gradients = (Array2D<I, O>, Array1D<O>);
 
-    fn forward(&mut self, input: [f32; I]) -> (Self::Output, Self::ForwardData) {
-        let forward_data = input;
-        let mut output = *self.biases;
+    fn forward(&self, input: Array1D<I>) -> (Self::Output, Self::ForwardData) {
+        let forward_data = input.clone();
+        let mut output = self.biases.clone();
         for (i, node) in output.iter_mut().enumerate() {
             for (j, input) in input.iter().enumerate() {
                 *node += self.weights[i][j] * input;
@@ -39,12 +36,12 @@ impl<const I: usize, const O: usize> Layer<[f32; I]> for DenseLayer<I, O> {
         (output, forward_data)
     }
 
-    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> ([f32; I], Self::Gradients) {
-        let mut gradients = Box::new(([[0.0; I]; O], [0.0; O]));
+    fn backward(&self, forward: Self::Output, forward_data: Self::ForwardData) -> (Array1D<I>, Self::Gradients) {
+        let mut gradients = Self::Gradients::default();
         for (i, bias) in gradients.1.iter_mut().enumerate() {
             *bias += forward[i];
         }
-        let mut output = [0.0; I];
+        let mut output = Array1D::new();
         #[allow(clippy::needless_range_loop)]
         for i in 0..I {
             for o in 0..O {
@@ -74,11 +71,11 @@ impl<const I: usize, const O: usize> DenseLayer<I, O> {
 
     pub fn random() -> Self {
         let mut rng = rng();
-        let mut biases = Box::new([0.0; O]);
+        let mut biases = Array1D::new();
         for bias in biases.iter_mut() {
             *bias = rng.random::<f32>() * 2.0 - 1.0;
         }
-        let mut weights = Box::new([[0.0; I]; O]);
+        let mut weights = Array2D::new();
         for node in weights.iter_mut() {
             for weight in node {
                 *weight = rng.random::<f32>() * 2.0 - 1.0;
@@ -87,15 +84,6 @@ impl<const I: usize, const O: usize> DenseLayer<I, O> {
         Self {
             weights,
             biases,
-        }
-    }
-}
-
-impl<const I: usize, const O: usize> Default for DenseLayer<I, O> {
-    fn default() -> Self {
-        Self {
-            weights: Box::new([[0.0; I]; O]),
-            biases: Box::new([0.0; O]),
         }
     }
 }

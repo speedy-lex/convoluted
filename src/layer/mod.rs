@@ -12,8 +12,8 @@ pub trait Layer<I> {
     type ForwardData;
     type Gradients;
 
-    fn forward(&mut self, input: I) -> (Self::Output, Self::ForwardData);
-    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients);
+    fn forward(&self, input: I) -> (Self::Output, Self::ForwardData);
+    fn backward(&self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients);
     fn apply_gradients(&mut self, gradients: Self::Gradients, multiplier: f32);
 }
 impl<I> Layer<I> for () {
@@ -22,12 +22,12 @@ impl<I> Layer<I> for () {
     type Gradients = ();
     
     #[inline(always)]
-    fn forward(&mut self, input: I) -> (I, ()) {
+    fn forward(&self, input: I) -> (I, ()) {
         (input, ())
     }
 
     #[inline(always)]
-    fn backward(&mut self, forward: Self::Output, _forward_data: Self::ForwardData) -> (I, Self::Gradients) {
+    fn backward(&self, forward: Self::Output, _forward_data: Self::ForwardData) -> (I, Self::Gradients) {
         (forward, ())
     }
     
@@ -71,13 +71,13 @@ where
     type Gradients = (S::Gradients, N::Gradients);
 
     #[inline]
-    fn forward(&mut self, input: I) -> (Self::Output, Self::ForwardData) {
+    fn forward(&self, input: I) -> (Self::Output, Self::ForwardData) {
         let intermediate = self.step.forward(input);
         let output = self.next.forward(intermediate.0);
         (output.0, (intermediate.1, output.1))
     }
     #[inline]
-    fn backward(&mut self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients) {
+    fn backward(&self, forward: Self::Output, forward_data: Self::ForwardData) -> (I, Self::Gradients) {
         let intermediate = self.next.backward(forward, forward_data.1);
         let output = self.step.backward(intermediate.0, forward_data.0);
         (output.0, (output.1, intermediate.1))

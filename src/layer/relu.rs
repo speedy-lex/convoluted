@@ -1,3 +1,5 @@
+use crate::array::Array1D;
+
 use super::Layer;
 
 #[cfg(feature = "serde")]
@@ -26,21 +28,21 @@ impl<const I: usize> ReluLayer<I> {
     }
 }
 
-impl<const I: usize> Layer<[f32; I]> for ReluLayer<I> {
-    type Output = [f32; I];
-    type ForwardData = [f32; I];
+impl<const I: usize> Layer<Array1D<I>> for ReluLayer<I> {
+    type Output = Array1D<I>;
+    type ForwardData = Array1D<I>;
     type Gradients = ();
 
-    fn forward(&mut self, mut input: [f32; I]) -> (Self::Output, Self::ForwardData) {
-        let forward_data = input;
+    fn forward(&self, mut input: Array1D<I>) -> (Self::Output, Self::ForwardData) {
+        let forward_data = input.clone();
         for x in input.iter_mut() {
             *x = Self::activate(*x);
         }
         (input, forward_data)
     }
 
-    fn backward(&mut self, mut forward: Self::Output, forward_data: Self::ForwardData) -> ([f32; I], Self::Gradients) {
-        for (forward, input) in forward.iter_mut().zip(&forward_data) {
+    fn backward(&self, mut forward: Self::Output, forward_data: Self::ForwardData) -> (Array1D<I>, Self::Gradients) {
+        for (forward, input) in forward.iter_mut().zip(forward_data.iter()) {
             *forward *= Self::derivate(*input);
         }
         (forward, ())
