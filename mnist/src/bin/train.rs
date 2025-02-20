@@ -1,3 +1,6 @@
+use std::io::Write;
+use std::time::Instant;
+
 use convoluted::array::Array1D;
 use convoluted::cost::{CostFunction, CrossEntropy};
 use convoluted::layer::{dense::DenseLayer, sigmoid::SigmoidLayer, LayerChain};
@@ -15,15 +18,20 @@ fn main() {
     let mut data: Vec<_> = input.into_iter().zip(labels).collect();
     let (test_input, test_labels) = mnist::get_mnist_test();
     let mut rng = rng();
-    for x in 0..20 {
-        println!("shuffling");
+    for x in 0..10 {
+        println!("Epoch {}/10", x+1);
+        let start_time = Instant::now();
         data.shuffle(&mut rng);
-        println!("epoch {} start", x+1);
-        for chunk in data.chunks(10) {
+        for (i, chunk) in data.chunks(10).enumerate() {
             let (input, labels) = chunk.iter().cloned().unzip();
             network.learn_batch(input, labels, 1.0);
+            if i % 89 == 0 || i == 5999 {
+                print!("\r{:04}/6000 | [{}>{}] {:.1}%", i+1, "=".repeat(i/300), " ".repeat(19 - i/300), (i+1) as f32 / 60.0);
+                std::io::stdout().flush().unwrap();
+            }
         }
-        println!("epoch {} complete", x+1);
+        println!();
+        println!("Epoch time: {:.03}", start_time.elapsed().as_secs_f64());
         let mut cost = 0.0;
         let mut correct = 0;
         for (input, label) in test_input.iter().zip(&test_labels) {
@@ -33,7 +41,8 @@ fn main() {
             }
             cost += CrossEntropy::cost(&out, label);
         }
-        println!("cost: {}, correct: {}", cost / test_input.len() as f32, correct as f32 / test_input.len() as f32 * 100.0);
+        println!("> Cost: {:.3}\n> Test accuracy: {:.1}", cost / test_input.len() as f32, correct as f32 / test_input.len() as f32 * 100.0);
+        println!();
     }
     network.save("./network.bin").expect("couldn't save");
 }
