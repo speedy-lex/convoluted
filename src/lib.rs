@@ -43,13 +43,13 @@ impl<I, L: Layer<I, Output = Array1D<N>>, C: CostFunction<L::Output, E>, E, cons
         let forward = self.forward(input);
         self.backwards(&forward.0, &expected, forward.1).1
     }
-    pub fn learn_batch(&mut self, input: Vec<I>, expected: Vec<E>, learn_rate: f32) {
-        let batch_size = input.len();
+    pub fn learn_batch(&mut self, data: Vec<(I, E)>, learn_rate: f32) {
+        let batch_size = data.len();
         if batch_size == 0 {
             return;
         }
-        let mut gradients = Vec::with_capacity(input.len());
-        for (input, expected) in input.into_iter().zip(expected.into_iter()) {
+        let mut gradients = Vec::with_capacity(data.len());
+        for (input, expected) in data {
             gradients.push(self.get_gradients(input, expected));
         }
         for gradient in gradients {
