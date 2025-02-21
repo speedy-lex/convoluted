@@ -42,7 +42,6 @@ impl<const I: usize, const O: usize> Layer<Array1D<I>> for DenseLayer<I, O> {
             *bias += forward[i];
         }
         let mut output = Array1D::new();
-        #[allow(clippy::needless_range_loop)]
         for i in 0..I {
             for o in 0..O {
                 gradients.0[o][i] += forward_data[i] * forward[o];

@@ -42,10 +42,9 @@ pub fn get_mnist_test() -> (Vec<Array1D<{ 28*28 }>>, Vec<usize>) {
     (data, labels)
 }
 
-pub fn transform(img: &Array1D<{ 28*28 }>, rot:f32, scale:f32, translation: (f32, f32)) -> Array1D<{ 28*28 }> {
+pub fn transform(img: &Array1D<{ 28*28 }>, rot: f32, scale: f32, translation: (f32, f32)) -> Array1D<{ 28*28 }> {
     let (sin, cos) = rot.sin_cos();
     let mut i = Array1D::new();
-    #[allow(clippy::needless_range_loop)]
     for x in 0..(28_usize.pow(2)) {
         let (mut u, mut v) = ((x%28) as f32 - 14.0, (x/28) as f32 - 14.0);
         (u, v) = (u*cos-v*sin, u*sin+v*cos);
