@@ -9,9 +9,9 @@ pub struct Array1D<const N: usize> {
 }
 impl<const N: usize> Default for Array1D<N> {
     fn default() -> Self {
-        let array: Box<std::mem::MaybeUninit<[f32; N]>> = Box::new_uninit();
+        let mut array: Box<std::mem::MaybeUninit<[f32; N]>> = Box::new_uninit();
         for offset in 0..N {
-            unsafe { std::ptr::write(array.as_ptr().cast::<f32>().cast_mut().add(offset), 0.0) };
+            unsafe { std::ptr::write(array.as_mut_ptr().cast::<f32>().add(offset), 0.0) };
         }
         let array = unsafe { array.assume_init() };
         Self { array }
@@ -112,10 +112,10 @@ pub struct Array2D<const X: usize, const Y: usize> {
 }
 impl<const X: usize, const Y: usize> Default for Array2D<X, Y> {
     fn default() -> Self {
-        let array: Box<std::mem::MaybeUninit<[[f32; X]; Y]>> = Box::new_uninit();
+        let mut array: Box<std::mem::MaybeUninit<[[f32; X]; Y]>> = Box::new_uninit();
         for y in 0..Y {
             for x in 0..X {
-                unsafe { std::ptr::write(array.as_ptr().cast::<f32>().cast_mut().add(x + y * X), 0.0) };
+                unsafe { std::ptr::write(array.as_mut_ptr().cast::<f32>().add(x + y * X), 0.0) };
             }
         }
         let array = unsafe { array.assume_init() };
