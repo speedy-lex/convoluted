@@ -23,8 +23,7 @@ fn main() {
         let start_time = Instant::now();
         data.shuffle(&mut rng);
         for (i, chunk) in data.chunks(10).enumerate() {
-            let (input, labels) = chunk.iter().cloned().unzip();
-            network.learn_batch(input, labels, 1.0);
+            network.learn_batch(chunk.to_owned(), 1.0);
             if i % 89 == 0 || i == 5999 {
                 print!("\r{:04}/6000 | [{}>{}] {:.1}%", i+1, "=".repeat(i/300), " ".repeat(19 - i/300), (i+1) as f32 / 60.0);
                 std::io::stdout().flush().unwrap();
