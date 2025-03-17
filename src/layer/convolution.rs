@@ -1,7 +1,5 @@
 use rand::{rng, Rng};
 
-use typenum::{Const, ToUInt, U};
-use std::ops::Rem;
 
 use crate::array::Array2D;
 
@@ -17,16 +15,14 @@ pub const fn is_odd(n: usize) -> usize {
 #[derive(Clone, Default)]
 pub struct Convolution<const N: usize>
 where
-    Const<N>: ToUInt,
-    U<N>: Rem<U<2>, Output = U<1>>, {
+    [(); is_odd(N)]:, {
     kernel: Array2D<N, N>,
     rotated_kernel: Array2D<N, N>
 }
 
 impl<const N: usize> Convolution<N>
 where
-    Const<N>: ToUInt,
-    U<N>: Rem<U<2>, Output = U<1>>, {
+    [(); is_odd(N)]:, {
     pub fn new() -> Convolution<N> {
         Convolution::default()
     }
@@ -77,8 +73,7 @@ where
 
 impl<const X: usize, const Y: usize, const N: usize> Layer<Array2D<X, Y>> for Convolution<N>
 where
-    Const<N>: ToUInt,
-    U<N>: Rem<U<2>, Output = U<1>>, {
+    [(); is_odd(N)]: {
     type Output = Array2D<X, Y>;
 
     type ForwardData = Array2D<X, Y>;
