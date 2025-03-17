@@ -3,9 +3,11 @@ use std::marker::PhantomData;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+pub mod convolution;
 pub mod dense;
 pub mod relu;
 pub mod sigmoid;
+pub mod reshape;
 
 pub trait Layer<I> {
     type Output;

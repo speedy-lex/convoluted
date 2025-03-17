@@ -80,6 +80,11 @@ impl<const N: usize> From<&[f32]> for Array1D<N> {
         new
     }
 }
+impl<const N: usize> From<Box<[f32; N]>> for Array1D<N> {
+    fn from(value: Box<[f32; N]>) -> Self {
+        Self { array: value }
+    }
+}
 impl<const N: usize> From<&Array1D<N>> for Vec<f32> {
     fn from(value: &Array1D<N>) -> Vec<f32> {
         let mut new = Vec::with_capacity(N);
@@ -198,6 +203,11 @@ impl<const X: usize, const Y: usize> From<&Vec<Vec<f32>>> for Array2D<X, Y> {
             }
         }
         new
+    }
+}
+impl<const X: usize, const Y: usize> From<Box<[[f32; X]; Y]>> for Array2D<X, Y> {
+    fn from(value: Box<[[f32; X]; Y]>) -> Self {
+        Self { array: value }
     }
 }
 impl<const X: usize, const Y: usize> From<&Array2D<X, Y>> for Vec<Vec<f32>> {
