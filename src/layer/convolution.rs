@@ -3,10 +3,14 @@ use rand::{rng, Rng};
 use typenum::{Const, ToUInt, U};
 use std::ops::Rem;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 use crate::array::Array2D;
 
 use super::Layer;
 
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Clone, Default)]
 pub struct Convolution<const N: usize>
 where

@@ -1,10 +1,14 @@
 use typenum::{Const, ToUInt, U};
 use std::ops::Mul;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 use crate::array::{Array1D, Array2D};
 
 use super::Layer;
 
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Shape<const N: usize, const X: usize, const Y: usize>
 where
@@ -36,6 +40,7 @@ where
     fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
 
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Flatten<const N: usize, const X: usize, const Y: usize>
 where
