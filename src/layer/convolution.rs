@@ -7,13 +7,6 @@ use crate::array::Array2D;
 
 use super::Layer;
 
-pub const fn is_odd(n: usize) -> usize {
-    if n % 2 == 0 {
-        panic!("even convolution sizes are not allowed")
-    }
-    0
-}
-
 #[derive(Clone, Default)]
 pub struct Convolution<const N: usize>
 where
@@ -73,6 +66,32 @@ where
         }
         new
     }
+
+    fn convolve_even_padded<const X: usize, const Y: usize>(array: &Array2D<X, Y>, kernel: &Array2D<X, Y>) -> Array2D<N, N> {
+        let mut new = Array2D::new();
+
+        let new_x_offset = X / 2;
+        let new_y_offset = Y / 2;
+
+        for new_x in 0..N {
+            for new_y in 0..N {
+                    let mut value = 0.0;
+                    for kernel_x in 0..X {
+                        for kernel_y in 0..Y {
+                        value += kernel.array[kernel_y][kernel_x]
+                            * try_sample(
+                                array,
+                                // this can only fail if you have arrays with ridiculous sizes which no one can fit in memory so it's ok
+                                (new_x + kernel_x).wrapping_sub(new_x_offset),
+                                (new_y + kernel_y).wrapping_sub(new_y_offset),
+                            ).unwrap_or_default();
+                    }
+                }
+                new.array[new_y][new_x] = value;
+            }
+        }
+        new
+    }
 }
 
 impl<const X: usize, const Y: usize, const N: usize> Layer<Array2D<X, Y>> for Convolution<N>
@@ -90,7 +109,7 @@ where
     }
 
     fn backward(&self, forward: Self::Output, forward_data: Self::ForwardData) -> (Array2D<X, Y>, Self::Gradients) {
-        (Self::convolve(&forward, &self.rotated_kernel), Array2D::new())
+        (Self::convolve(&forward, &self.rotated_kernel), Self::convolve_even_padded(&forward_data, &forward))
     }
 
     fn apply_gradients(&mut self, mut gradients: Self::Gradients, multiplier: f32) {
@@ -100,6 +119,7 @@ where
     }
 }
 
+/// samples with 0 padding
 fn try_sample<const X: usize, const Y: usize>(array: &Array2D<X, Y>, index_x: usize, index_y: usize) -> Option<f32> {
     if index_x >= X || index_y >= Y {
         return None;
