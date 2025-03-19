@@ -4,6 +4,7 @@ use std::time::Instant;
 use convoluted::array::Array1D;
 use convoluted::cost::{CostFunction, CrossEntropy};
 use convoluted::layer::convolution::Convolution;
+use convoluted::layer::relu::ReluLayer;
 use convoluted::layer::reshape::{Flatten, Shape};
 use convoluted::layer::{dense::DenseLayer, sigmoid::SigmoidLayer, LayerChain};
 use convoluted::Network;
@@ -14,6 +15,11 @@ fn main() {
         LayerChain::new(Shape::<784, 28, 28>{})
             .push(Convolution::<5>::random())
             .push(Flatten{})
+            .push(ReluLayer::new())
+            .push(Shape::<784, 28, 28>{})
+            .push(Convolution::<3>::random())
+            .push(Flatten{})
+            .push(ReluLayer::new())
             .push(DenseLayer::<{ 28*28 }, 100>::random())
             .push(SigmoidLayer::new())
             .push(DenseLayer::<100, 10>::random())

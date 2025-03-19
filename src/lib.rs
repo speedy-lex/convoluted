@@ -21,6 +21,12 @@ pub struct Network<I, L: Layer<I>, C: CostFunction<P, E>, P, E> {
     _predicted_marker: PhantomData<P>,
     _label_marker: PhantomData<E>,
 }
+
+impl<I, L: Layer<I>, C: CostFunction<P, E>, P, E> Network<I, L, C, P, E> {
+    pub fn into_layer(self) -> L {
+        self.layer
+    }
+}
 impl<I, C: CostFunction<L::Output, E>, E, L: Layer<I>> Network<I, L, C, L::Output, E> {
     pub fn new(layer: L) -> Self {
         Self {
