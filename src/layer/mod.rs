@@ -4,6 +4,7 @@ use std::marker::PhantomData;
 use serde::{Deserialize, Serialize};
 
 pub mod convolution;
+pub mod pooling;
 pub mod dense;
 pub mod relu;
 pub mod sigmoid;
