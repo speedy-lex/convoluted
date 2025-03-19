@@ -16,7 +16,7 @@ pub struct Convolution<const N: usize>
 where
     Const<N>: ToUInt,
     U<N>: Rem<U<2>, Output = U<1>>, {
-    kernel: Array2D<N, N>,
+    pub kernel: Array2D<N, N>,
     rotated_kernel: Array2D<N, N>
 }
 
@@ -73,25 +73,23 @@ where
 
     fn convolve_even_padded<const X: usize, const Y: usize>(array: &Array2D<X, Y>, kernel: &Array2D<X, Y>) -> Array2D<N, N> {
         let mut new = Array2D::new();
-
-        let new_x_offset = X / 2;
-        let new_y_offset = Y / 2;
+        let kernel_offset = (N - 1)/2; // offset to move kernel center to pixel
 
         for new_x in 0..N {
             for new_y in 0..N {
-                    let mut value = 0.0;
-                    for kernel_x in 0..X {
-                        for kernel_y in 0..Y {
-                        value += kernel.array[kernel_y][kernel_x]
-                            * try_sample(
-                                array,
-                                // this can only fail if you have arrays with ridiculous sizes which no one can fit in memory so it's ok
-                                (new_x + kernel_x).wrapping_sub(new_x_offset),
-                                (new_y + kernel_y).wrapping_sub(new_y_offset),
-                            ).unwrap_or_default();
+                let mut value = 0.0;
+                for kernel_x in 0..X {
+                    for kernel_y in 0..Y {
+                    value += kernel.array[kernel_y][kernel_x]
+                        * try_sample(
+                            array,
+                            // this can only fail if you have arrays with ridiculous sizes which no one can fit in memory so it's ok
+                            (new_x + kernel_x).wrapping_sub(kernel_offset),
+                            (new_y + kernel_y).wrapping_sub(kernel_offset),
+                        ).unwrap_or_default();
                     }
                 }
-                new.array[new_y][new_x] = value;
+                new.array[new_y][new_x] = value / (N.pow(2)) as f32;
             }
         }
         new
