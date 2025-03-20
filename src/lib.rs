@@ -10,6 +10,7 @@ use crate::{cost::CostFunction, layer::Layer};
 
 pub mod cost;
 pub mod layer;
+pub mod activation;
 pub mod array;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

@@ -1,18 +1,19 @@
 use std::io::Write;
 use std::time::Instant;
 
+use convoluted::activation::sigmoid::Sigmoid;
 use convoluted::array::Array1D;
 use convoluted::cost::{CostFunction, CrossEntropy};
-use convoluted::layer::{dense::DenseLayer, sigmoid::SigmoidLayer, LayerChain};
+use convoluted::layer::{dense::DenseLayer, LayerChain};
 use convoluted::Network;
 use rand::{rng, seq::SliceRandom};
 
 fn main() {
     let mut network = Network::<Array1D<{ 28*28 }>, _, CrossEntropy, Array1D<10>, _>::new(
         LayerChain::new(DenseLayer::<{ 28*28 }, 100>::random())
-            .push(SigmoidLayer::new())
+            .push(Sigmoid::new())
             .push(DenseLayer::<100, 10>::random())
-            .push(SigmoidLayer::new())
+            .push(Sigmoid::new())
     );
     let (input, labels) = mnist::get_mnist_train();
     let mut data: Vec<_> = input.into_iter().zip(labels).collect();
