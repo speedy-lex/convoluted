@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 pub mod convolution;
 pub mod pooling;
 pub mod dense;
-pub mod relu;
-pub mod sigmoid;
 pub mod reshape;
 
 pub trait Layer<I> {

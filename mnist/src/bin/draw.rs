@@ -1,8 +1,8 @@
 use raylib::prelude::*;
 
-use convoluted::{array::Array1D, cost::CrossEntropy, layer::{dense::DenseLayer, sigmoid::SigmoidLayer, LayerChain}};
+use convoluted::{activation::sigmoid::Sigmoid, array::Array1D, cost::CrossEntropy, layer::{dense::DenseLayer, LayerChain}};
 
-type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<DenseLayer<{ 28*28 }, 100>, (), Array1D<{ 28*28 }>>, SigmoidLayer, Array1D<{ 28*28 }>>, DenseLayer<100, 10>, Array1D<{ 28*28 }>>, SigmoidLayer, Array1D<{ 28*28 }>>, CrossEntropy, Array1D<10>, usize>;
+type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<DenseLayer<{ 28*28 }, 100>, (), Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, DenseLayer<100, 10>, Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, CrossEntropy, Array1D<10>, usize>;
 
 const PIXEL_SIZE: usize = 20;
 
