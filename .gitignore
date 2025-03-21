@@ -1,3 +1,4 @@
 /target
+/mnist/convoluted.toml
 *.csv
 *.bin
