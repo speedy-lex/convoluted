@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod convolution;
 pub mod pooling;
+pub mod bias;
 pub mod dense;
 pub mod reshape;
 

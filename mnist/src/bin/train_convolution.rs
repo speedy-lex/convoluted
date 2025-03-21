@@ -1,9 +1,10 @@
 use std::io::Write;
 use std::time::Instant;
 
-use convoluted::activation::{sigmoid::Sigmoid, relu::Relu};
+use convoluted::activation::sigmoid::Sigmoid;
 use convoluted::array::Array1D;
 use convoluted::cost::{CostFunction, CrossEntropy};
+use convoluted::layer::bias::BiasLayer;
 use convoluted::layer::convolution::Convolution;
 use convoluted::layer::pooling::MaxPooling;
 use convoluted::layer::reshape::{Flatten, Shape};
@@ -15,26 +16,24 @@ fn main() {
     let mut network = Network::<Array1D<{ 28*28 }>, _, CrossEntropy, Array1D<10>, _>::new(
         LayerChain::new(Shape::<784, 28, 28>{})
             .push(Convolution::<5>::random())
-            .push(Relu::new())
-            .push(Convolution::<5>::random())
-            .push(Relu::new())
-            .push(Convolution::<5>::random())
+            .push(BiasLayer::<28, 28>::random())
             .push(Sigmoid::new())
             .push(MaxPooling::<2, 14, 14>{})
             .push(Convolution::<3>::random())
+            .push(BiasLayer::<14, 14>::random())
             .push(Sigmoid::new())
             .push(Flatten{})
-            .push(DenseLayer::<{ 14*14 }, 50>::random())
+            .push(DenseLayer::<{ 14*14 }, 64>::random())
             .push(Sigmoid::new())
-            .push(DenseLayer::<50, 10>::random())
+            .push(DenseLayer::<64, 10>::random())
             .push(Sigmoid::new())
     );
     let (input, labels) = mnist::get_mnist_train();
     let mut data: Vec<_> = input.into_iter().zip(labels).collect();
     let (test_input, test_labels) = mnist::get_mnist_test();
     let mut rng = rng();
-    for x in 0..20 {
-        println!("Epoch {}/20", x+1);
+    for x in 0..10 {
+        println!("Epoch {}/10", x+1);
         let start_time = Instant::now();
         data.shuffle(&mut rng);
         for (i, chunk) in data.chunks(10).enumerate() {

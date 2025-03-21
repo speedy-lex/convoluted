@@ -7,3 +7,5 @@ edition = "2024"
 convoluted = { path = "..", features = ["bincode"] }
 rand = "0.9.0"
 raylib = "5.0.2"
+serde = { version = "1.0.219", features = ["serde_derive"] }
+toml = "0.8.20"
