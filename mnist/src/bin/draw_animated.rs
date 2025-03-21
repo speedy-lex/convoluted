@@ -140,10 +140,20 @@ fn main() {
 }
 
 fn draw_2d_array<const X: usize, const Y: usize>(d: &mut RaylibDrawHandle, array: &Array2D<X, Y>, width: usize, height: usize) {
+    let array_max = *array.iter().flat_map(|x| x.iter()).max_by(|x, y| x.total_cmp(y)).unwrap();
+    let array_min = array.iter().flat_map(|x| x.iter()).min_by(|x, y| x.total_cmp(y)).unwrap().abs();
+    let scale = array_max.max(array_min);
     for y in 0..Y {
         for x in 0..X {
-            let col = 255 - (array.array[y][x] * 256.0).floor() as u8;
-            d.draw_rectangle((x * PIXEL_SIZE) as i32 + width as i32/2 - (X/2 * PIXEL_SIZE) as i32, (y * PIXEL_SIZE) as i32 + height as i32/2 - (Y/2 * PIXEL_SIZE) as i32, PIXEL_SIZE as i32, PIXEL_SIZE as i32, Color::new(col, col, col, 255));
+            let col = array.array[y][x];
+            let col = if col < 0.0 {
+                let col = -(col / scale * 255.0).floor() as u8;
+                Color::new(col, 0, 0, 255)
+            } else {
+                let col = (col / scale * 255.0).floor() as u8;
+                Color::new(col, col, col, 255)
+            };
+            d.draw_rectangle((x * PIXEL_SIZE) as i32 + width as i32/2 - (X/2 * PIXEL_SIZE) as i32, (y * PIXEL_SIZE) as i32 + height as i32/2 - (Y/2 * PIXEL_SIZE) as i32, PIXEL_SIZE as i32, PIXEL_SIZE as i32, col);
         }   
     }
 }
