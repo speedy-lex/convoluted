@@ -135,6 +135,19 @@ fn main() {
             }
             _ => {}
         }
+        if step == 11 {
+            let sorted: Vec<_> = dense_area_2.iter().enumerate().collect();
+            let sum: f32 = sorted.iter().map(|x| x.1).sum();
+            for (i, (number, chance)) in sorted[5..].iter().enumerate() {
+                d.draw_line(width as i32/2 - (1.5*PIXEL_SIZE as f32) as i32 + (i*PIXEL_SIZE) as i32, height as i32/2 + PIXEL_SIZE as i32, 150 * i as i32 + width as i32 / 2 - (150 * 2), height as i32 / 2 - 20 + 250, Color::WHITE);
+                d.draw_text(&format!("{}: {:.1}%", number, *chance / sum * 100.0), 150 * i as i32 + width as i32 / 2 + 20 - (150.0 * 2.5) as i32,  height as i32 / 2 - 15 + 250, 30, Color::WHITE);
+            }
+            for (i, (number, chance)) in sorted[..5].iter().enumerate() {
+                let text = format!("{}: {:.1}%", number, *chance / sum * 100.0);
+                d.draw_line(width as i32/2 - (1.5*PIXEL_SIZE as f32) as i32 + (i*PIXEL_SIZE) as i32, height as i32/2 - PIXEL_SIZE as i32, 150 * i as i32 + width as i32 / 2 - (150 * 2), height as i32 / 2 + 20 - 250, Color::WHITE);
+                d.draw_text(&text, 150 * i as i32 + width as i32 / 2 - (150 * 2) - d.measure_text(&text, 30)/2,  height as i32 / 2 - 15 - 250, 30, Color::WHITE);
+            }
+        }
     }
     std::fs::write("convoluted.toml", toml::to_string(&config).unwrap()).unwrap()
 }
