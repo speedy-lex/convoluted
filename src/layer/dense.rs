@@ -42,8 +42,8 @@ impl<const I: usize, const O: usize> Layer<Array1D<I>> for DenseLayer<I, O> {
             *bias += forward[i];
         }
         let mut output = Array1D::new();
-        for i in 0..I {
-            for o in 0..O {
+        for o in 0..O {
+            for i in 0..I {
                 gradients.0[o][i] += forward_data[i] * forward[o];
                 output[i] += self.weights[o][i] * forward[o];
             }

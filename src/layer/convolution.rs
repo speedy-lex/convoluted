@@ -30,8 +30,8 @@ where
     pub fn random() -> Convolution<N> {
         let mut rng = rng();
         let mut array = Array2D::new();
-        for x in 0..N {
-            for y in 0..N {
+        for y in 0..N {
+            for x in 0..N {
                 array.array[y][x] = rng.random::<f32>() * 2.0 - 1.0;
             }
         }
@@ -41,8 +41,8 @@ where
         x
     }
     pub fn update_rotated_kernel(&mut self) {
-        for x in 0..N {
-            for y in 0..N {
+        for y in 0..N {
+            for x in 0..N {
                 self.rotated_kernel.array[y][x] = self.kernel.array[N - 1 - y][N - 1 - x];
             }
         }
@@ -51,11 +51,11 @@ where
         let mut new = Array2D::new();
         let kernel_offset = (N - 1)/2; // offset to move kernel center to pixel
 
-        for new_x in 0..X {
-            for new_y in 0..Y {
+        for new_y in 0..Y {
+            for new_x in 0..X {
                 let mut value = 0.0;
-                for kernel_x in 0..N {
-                    for kernel_y in 0..N {
+                for kernel_y in 0..N {
+                    for kernel_x in 0..N {
                         value += kernel.array[kernel_y][kernel_x]
                             * try_sample(
                                 array,
@@ -75,11 +75,11 @@ where
         let mut new = Array2D::new();
         let kernel_offset = (N - 1)/2; // offset to move kernel center to pixel
 
-        for new_x in 0..N {
-            for new_y in 0..N {
+        for new_y in 0..N {
+            for new_x in 0..N {
                 let mut value = 0.0;
-                for kernel_x in 0..X {
-                    for kernel_y in 0..Y {
+                for kernel_y in 0..Y {
+                    for kernel_x in 0..X {
                     value += kernel.array[kernel_y][kernel_x]
                         * try_sample(
                             array,

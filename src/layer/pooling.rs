@@ -40,13 +40,13 @@ where
         let mut out = Array2D::new();
         let mut forward_data = Array2D::new(); // TODO: Array2d<T>
 
-        for chunk_x in 0..A {
-            for chunk_y in 0..B {
+        for chunk_y in 0..B {
+            for chunk_x in 0..A {
                 let (mut max_x, mut max_y) = (N, N); // set to an invalid value to catch errors (should be overwritten)
                 let mut max = f32::NEG_INFINITY;
 
-                for x in 0..N {
-                    for y in 0..N {
+                for y in 0..N {
+                    for x in 0..N {
                         let x_index = chunk_x * N + x;
                         let y_index = chunk_y * N + y;
                         let val = input.array[y_index][x_index];
@@ -68,8 +68,8 @@ where
 
     fn backward(&self, forward: Self::Output, forward_data: Self::ForwardData) -> (Array2D<X, Y>, Self::Gradients) {
         let mut out = Array2D::new();
-        for chunk_x in 0..A {
-            for chunk_y in 0..B {
+        for chunk_y in 0..B {
+            for chunk_x in 0..A {
                 let packed = forward_data.array[chunk_y][chunk_x].to_bits();
                 let x = packed & 0xffff;
                 let y = (packed >> 16) & 0xffff;
