@@ -89,7 +89,7 @@ where
                         ).unwrap_or_default();
                     }
                 }
-                new.array[new_y][new_x] = value;// / (N.pow(2)) as f32;
+                new.array[new_y][new_x] = value;
             }
         }
         new
