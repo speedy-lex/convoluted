@@ -38,6 +38,7 @@ impl<I> Layer<I> for () {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct LayerChain<S, N, I> {
     pub step: S,
     pub next: N,

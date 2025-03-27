@@ -3,7 +3,7 @@ use std::{borrow::Borrow, ops::{AddAssign, Deref, DerefMut, MulAssign}};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Array1D<const N: usize> {
     pub array: Box<[f32; N]>
 }
@@ -111,7 +111,7 @@ impl<'de, const N: usize> Deserialize<'de> for Array1D<N>  {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Array2D<const X: usize, const Y: usize> {
     pub array: Box<[[f32; X]; Y]>
 }

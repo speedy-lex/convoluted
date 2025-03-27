@@ -5,6 +5,7 @@ pub trait CostFunction<P, E> {
     fn derivative(predicted: &P, expected: &E) -> P;
 }
 
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Mse;
 impl<const I: usize> CostFunction<Array1D<I>, Array1D<I>> for Mse {
     fn cost(predicted: &Array1D<I>, expected: &Array1D<I>) -> f32 {
@@ -12,7 +13,7 @@ impl<const I: usize> CostFunction<Array1D<I>, Array1D<I>> for Mse {
         for (p, e) in predicted.iter().zip(expected.iter()) {
             result += (*p - *e).powi(2)
         }
-        result
+        result / I as f32
     }
 
     fn derivative(predicted: &Array1D<I>, expected: &Array1D<I>) -> Array1D<I> {
@@ -29,7 +30,7 @@ impl<const I: usize> CostFunction<Array1D<I>, usize> for Mse {
         for (i, p) in predicted.iter().enumerate() {
             result += (*p - ((i == *expected) as u32 as f32)).powi(2)
         }
-        result
+        result / I as f32
     }
 
     fn derivative(predicted: &Array1D<I>, expected: &usize) -> Array1D<I> {
@@ -41,6 +42,7 @@ impl<const I: usize> CostFunction<Array1D<I>, usize> for Mse {
     }
 }
 
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct CrossEntropy;
 impl CrossEntropy {
     fn softmax<const I: usize>(values: &Array1D<I>) -> Array1D<I> {

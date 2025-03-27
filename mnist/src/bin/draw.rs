@@ -25,7 +25,7 @@ impl Default for Config {
 
 fn main() {
     let config = load_cfg();
-    let mut network = Network::load("network.bin").unwrap();
+    let network = Network::load("network.bin").unwrap();
     let (mut rl, rt) = init()
         .title("MNIST classifier")
         .size(0, 0)

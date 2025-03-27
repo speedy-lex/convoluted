@@ -14,9 +14,9 @@ pub mod activation;
 pub mod array;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone)]
+#[derive(Clone, Debug, Default)]
 pub struct Network<I, L: Layer<I>, C: CostFunction<P, E>, P, E> {
-    layer: L,
+    pub layer: L,
     _input_marker: PhantomData<I>,
     _cost_marker: PhantomData<C>,
     _predicted_marker: PhantomData<P>,
@@ -40,13 +40,13 @@ impl<I, C: CostFunction<L::Output, E>, E, L: Layer<I>> Network<I, L, C, L::Outpu
     }
 }
 impl<I, L: Layer<I, Output = Array1D<N>>, C: CostFunction<L::Output, E>, E, const N: usize> Network<I, L, C, L::Output, E> {
-    pub fn forward(&mut self, input: I) -> (L::Output, L::ForwardData) {
+    pub fn forward(&self, input: I) -> (L::Output, L::ForwardData) {
         self.layer.forward(input)
     }
-    fn backwards(&mut self, output: &L::Output, expected: &E, forward_data: L::ForwardData) -> (I, L::Gradients) {
+    fn backwards(&self, output: &L::Output, expected: &E, forward_data: L::ForwardData) -> (I, L::Gradients) {
         self.layer.backward(C::derivative(output, expected), forward_data)
     }
-    fn get_gradients(&mut self, input: I, expected: E) -> L::Gradients {
+    fn get_gradients(&self, input: I, expected: E) -> L::Gradients {
         let forward = self.forward(input);
         self.backwards(&forward.0, &expected, forward.1).1
     }
