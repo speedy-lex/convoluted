@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 convoluted = { path = "..", features = ["rkyv"] }
 rand = "0.9.0"
-raylib = "5.0.2"
+# Linking is broken in raylib-rs v5.5.0, see: https://github.com/raylib-rs/raylib-rs/issues/141
+raylib = { git = "https://github.com/raylib-rs/raylib-rs/", rev = "fba491e4394c83a4d27ea31f3763804fdb3ec3d1" }
 serde = { version = "1.0.219", features = ["serde_derive"] }
 toml = "0.8.20"
