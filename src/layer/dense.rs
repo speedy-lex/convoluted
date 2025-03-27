@@ -7,6 +7,7 @@ use crate::array::{Array1D, Array2D};
 
 use super::Layer;
 
+#[cfg_attr(feature = "rkyv", derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Default, Debug)]
 pub struct DenseLayer<const I: usize, const O: usize> {

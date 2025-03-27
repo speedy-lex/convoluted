@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-convoluted = { path = "..", features = ["bincode"] }
+convoluted = { path = "..", features = ["rkyv"] }
 rand = "0.9.0"
 raylib = "5.0.2"
 serde = { version = "1.0.219", features = ["serde_derive"] }
