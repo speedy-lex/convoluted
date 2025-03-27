@@ -7,18 +7,11 @@ use crate::array::{Array1D, Array2D};
 
 use super::Layer;
 
-#[cfg(feature = "serde")]
-#[derive(Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Default, Debug)]
 pub struct DenseLayer<const I: usize, const O: usize> {
-    weights: Array2D<I, O>,
-    biases: Array1D<O>,
-}
-
-#[cfg(not(feature = "serde"))]
-#[derive(Clone, Default)]
-pub struct DenseLayer<const I: usize, const O: usize> {
-    weights: Array2D<I, O>,
-    biases: Array1D<O>,
+    pub weights: Array2D<I, O>,
+    pub biases: Array1D<O>,
 }
 impl<const I: usize, const O: usize> Layer<Array1D<I>> for DenseLayer<I, O> {
     type Output = Array1D<O>;

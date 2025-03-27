@@ -9,7 +9,7 @@ use crate::array::Array2D;
 use super::Layer;
 
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Hash)]
 pub struct MaxPooling<const N: usize, const A: usize, const B: usize>
 where
     Const<N>: ToUInt,
