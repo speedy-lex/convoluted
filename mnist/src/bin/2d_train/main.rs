@@ -89,7 +89,7 @@ fn main() {
         shader.set_shader_value(weights03, network.layer.step.step.step.step.weights[3]);
         
         let mut d = rl.begin_drawing(&rt);
-        d.begin_shader_mode(&shader).draw_rectangle(0, 0, width as i32, height as i32, Color::WHITE);
+        d.begin_shader_mode(&mut shader).draw_rectangle(0, 0, width as i32, height as i32, Color::WHITE);
         
         d.draw_line(width as i32/2, 0, width as i32/2, height as i32, Color::WHITE);
         d.draw_line(0, height as i32/2, width as i32, height as i32/2, Color::WHITE);
