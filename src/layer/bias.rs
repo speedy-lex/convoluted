@@ -7,6 +7,7 @@ use rand::{rng, Rng};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+#[cfg_attr(feature = "rkyv", derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Default)]
 pub struct BiasLayer<const X: usize, const Y: usize> {
