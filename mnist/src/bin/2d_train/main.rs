@@ -2,7 +2,7 @@ use convoluted::{activation::sigmoid::Sigmoid, array::Array1D, cost::{CostFuncti
 
 use raylib::prelude::*;
 
-use rand::{rng, rngs::ThreadRng, seq::SliceRandom, Rng};
+use rand::{rng, rngs::ThreadRng, Rng};
 
 fn main() {
     let mut network = Network::<Array1D<2>, _, Mse, Array1D<1>, Array1D<1>>::new(
