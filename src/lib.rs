@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
-#[cfg(feature = "bincode")]
-use std::{path::Path, fs::write, fs::read};
 use array::Array1D;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -13,6 +12,7 @@ pub mod layer;
 pub mod activation;
 pub mod array;
 
+#[cfg_attr(feature = "rkyv", derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, Default)]
 pub struct Network<I, L: Layer<I>, C: CostFunction<P, E>, P, E> {
@@ -66,16 +66,26 @@ impl<I, L: Layer<I, Output = Array1D<N>>, C: CostFunction<L::Output, E>, E, cons
 
 }
 
-#[cfg(feature = "bincode")]
-impl<I, C: CostFunction<L::Output, E>, E, L: Layer<I>> Network<I, L, C, L::Output, E> 
-where Self: Serialize + for<'a> Deserialize<'a> {
-    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), Box<dyn std::error::Error>> {
-        let x = bincode::serialize(self)?;
-        write(path, &x)?;
+#[cfg(feature = "rkyv")]
+use rkyv::{api::high::{HighDeserializer, HighSerializer}, bytecheck::CheckBytes, rancor::{Error, Source, Strategy}, ser::allocator::ArenaHandle, util::AlignedVec, validation::{archive::ArchiveValidator, shared::SharedValidator, Validator}};
+#[cfg(feature = "rkyv")]
+use std::{path::Path, fs::write, fs::read};
+
+#[cfg(feature = "rkyv")]
+impl<I, C: CostFunction<L::Output, E>, E, L: Layer<I>> Network<I, L, C, L::Output, E> {
+
+    pub fn save(&self, path: impl AsRef<Path>) -> Result<(), Error>
+    where
+        Self: for<'a> rkyv::Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, Error>> {
+        let x = rkyv::to_bytes(self)?;
+        write(path, &x).map_err(Error::new)?;
         Ok(())
     }
-    pub fn load(path: impl AsRef<Path>) -> Result<Self, Box<dyn std::error::Error>> {
-        let x = read(path)?;
-        Ok(bincode::deserialize(&x)?)
+    pub fn load(path: impl AsRef<Path>) -> Result<Self, Error>
+    where
+        Self: rkyv::Archive,
+        <Self as rkyv::Archive>::Archived: rkyv::Portable + rkyv::Deserialize<Self, HighDeserializer<Error>> + for<'b> CheckBytes<Strategy<Validator<ArchiveValidator<'b>, SharedValidator>, Error>> {
+        let x = read(path).map_err(Error::new)?;
+        rkyv::deserialize::<Network<I, L, C, L::Output, E>, Error>(rkyv::access::<<Self as rkyv::Archive>::Archived, Error>(&x)?)
     }
 }
