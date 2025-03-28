@@ -53,13 +53,11 @@ fn main() {
     
     while !rl.window_should_close() {
         if rl.is_key_down(KeyboardKey::KEY_SPACE) {
-            data.shuffle(&mut rng);
             for _ in 0..10 {
                 network.learn_batch(data.to_owned(), 1.0);
             }
         }
         if rl.is_key_down(KeyboardKey::KEY_N) {
-            data.shuffle(&mut rng);
             network.learn_batch(data.to_owned(), 1.0);
         }
         let mut new_dataset = false;
@@ -70,6 +68,10 @@ fn main() {
         if rl.is_key_pressed(KeyboardKey::KEY_TWO) {
             new_dataset = true;
             create_data(&mut data, &mut rng, 1);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_THREE) {
+            new_dataset = true;
+            create_data(&mut data, &mut rng, 2);
         }
         if new_dataset || rl.is_key_pressed(KeyboardKey::KEY_R) {
             network = Network::new(
@@ -120,8 +122,10 @@ fn create_data(data: &mut Vec<(Array1D<2>, Array1D<1>)>, rng: &mut ThreadRng, se
 
         let in_circle = if set == 0 {
             x.powi(2) + y.powi(2) <= 2.0
-        } else {
+        } else if set == 1 {
             (1.0/-x <= y && y <= 1.0/x) || (1.0/x <= y && y <= 1.0/-x)
+        } else {
+            x.exp2() < y || -(-x).exp2() > y
         };
         let mut label_array = Array1D::new();
         label_array[0] = in_circle as u32 as f32;
