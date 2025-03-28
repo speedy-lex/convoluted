@@ -10,6 +10,7 @@ use crate::array::Array2D;
 
 use super::Layer;
 
+#[cfg_attr(feature = "rkyv", derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize))]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Clone, Default)]
 pub struct Convolution<const N: usize>

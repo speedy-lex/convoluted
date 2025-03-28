@@ -37,6 +37,7 @@ impl<I> Layer<I> for () {
     fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
 
+#[cfg_attr(feature = "rkyv", derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct LayerChain<S, N, I> {
