@@ -1,6 +1,7 @@
 use crate::{array::{Array1D, Array2D}, layer::Layer};
 
 pub mod relu;
+pub mod leaky_relu;
 pub mod sigmoid;
 
 pub trait Activation {
