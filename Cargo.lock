@@ -883,6 +883,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "train_2d"
+version = "0.1.0"
+dependencies = [
+ "convoluted",
+ "rand",
+ "raylib",
+]
+
+[[package]]
 name = "typenum"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

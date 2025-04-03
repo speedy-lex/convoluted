@@ -8,7 +8,7 @@ rkyv = ["dep:rkyv", "serde"]
 serde = ["dep:serde", "dep:serde_with"]
 
 [workspace]
-members = ["convolution_test", "mnist"]
+members = ["convolution_test", "mnist", "train_2d"]
 
 [dependencies]
 rand = "0.9.0"
