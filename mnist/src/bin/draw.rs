@@ -63,16 +63,18 @@ fn main() {
             }
         }
 
-        let mut sorted: Vec<_> = result.iter().enumerate().collect();
-        if config.sorted {
-            sorted.sort_by(|x, y| y.1.partial_cmp(x.1).unwrap());
-        }
-        let sum: f32 = sorted.iter().map(|x| x.1).sum();
-        for (i, (number, chance)) in sorted.iter().enumerate() {
-            d.draw_text(&format!("{}: {:.2}%", number, *chance / sum * 100.0), width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 30, Color::WHITE);
-            if config.chance_bars {
-                d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 100, 20, Color::GRAY);
-                d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5,(**chance * 100.0) as i32, 20, Color::WHITE);
+        if drawing_area.iter().any(|x| *x != 0.0) {
+            let mut sorted: Vec<_> = result.iter().enumerate().collect();
+            if config.sorted {
+                sorted.sort_by(|x, y| y.1.partial_cmp(x.1).unwrap());
+            }
+            let sum: f32 = sorted.iter().map(|x| x.1).sum();
+            for (i, (number, chance)) in sorted.iter().enumerate() {
+                d.draw_text(&format!("{}: {:.2}%", number, *chance / sum * 100.0), width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 30, Color::WHITE);
+                if config.chance_bars {
+                    d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 100, 20, Color::GRAY);
+                    d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5,(**chance * 100.0) as i32, 20, Color::WHITE);
+                }
             }
         }
     }
