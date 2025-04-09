@@ -15,11 +15,11 @@ impl Relu {
 }
 
 impl Activation for Relu {
-    #[inline(always)]
+    #[inline]
     fn activate(x: f32) -> f32 {
         x.max(0.0)
     }
-    #[inline(always)]
+    #[inline]
     fn derivate(x: f32) -> f32 {
         (x >= 0.0) as u32 as f32
     }

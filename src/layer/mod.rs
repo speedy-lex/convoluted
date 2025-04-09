@@ -23,17 +23,17 @@ impl<I> Layer<I> for () {
     type ForwardData = ();
     type Gradients = ();
     
-    #[inline(always)]
+    #[inline]
     fn forward(&self, input: I) -> (I, ()) {
         (input, ())
     }
 
-    #[inline(always)]
+    #[inline]
     fn backward(&self, forward: Self::Output, _forward_data: Self::ForwardData) -> (I, Self::Gradients) {
         (forward, ())
     }
     
-    #[inline(always)]
+    #[inline]
     fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
 

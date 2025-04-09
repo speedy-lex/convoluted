@@ -15,11 +15,11 @@ impl Sigmoid {
 }
 
 impl Activation for Sigmoid {
-    #[inline(always)]
+    #[inline]
     fn activate(x: f32) -> f32 {
         1.0 / (1.0 + (-x).exp())
     }
-    #[inline(always)]
+    #[inline]
     fn derivate(x: f32) -> f32 {
         let activated = Self::activate(x);
         activated * (1.0 - activated)
