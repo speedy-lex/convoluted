@@ -30,14 +30,17 @@ where
 
     type Gradients = ();
 
+    #[inline]
     fn forward(&self, input: Array1D<N>) -> (Self::Output, Self::ForwardData) {
         (Array2D::from(unsafe { std::mem::transmute::<Box<[f32; N]>, Box<[[f32; X]; Y]>>(input.array) }), ())
     }
 
+    #[inline]
     fn backward(&self, forward: Self::Output, _forward_data: Self::ForwardData) -> (Array1D<N>, Self::Gradients) {
         (Array1D::from(unsafe { std::mem::transmute::<Box<[[f32; X]; Y]>, Box<[f32; N]>>(forward.array) }), ())
     }
 
+    #[inline]
     fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }
 
@@ -63,13 +66,16 @@ where
 
     type Gradients = ();
 
+    #[inline]
     fn forward(&self, input: Array2D<X, Y>) -> (Self::Output, Self::ForwardData) {
         (Array1D::from(unsafe { std::mem::transmute::<Box<[[f32; X]; Y]>, Box<[f32; N]>>(input.array) }), ())
     }
 
+    #[inline]
     fn backward(&self, forward: Self::Output, _forward_data: Self::ForwardData) -> (Array2D<X, Y>, Self::Gradients) {
         (Array2D::from(unsafe { std::mem::transmute::<Box<[f32; N]>, Box<[[f32; X]; Y]>>(forward.array) }), ())
     }
 
+    #[inline]
     fn apply_gradients(&mut self, _gradients: Self::Gradients, _multiplier: f32) {}
 }

@@ -15,7 +15,7 @@ impl LeakyRelu {
 }
 
 impl Activation for LeakyRelu {
-    #[inline(always)]
+    #[inline]
     fn activate(x: f32) -> f32 {
         if x < 0.0 {
             x * 0.01
@@ -23,7 +23,7 @@ impl Activation for LeakyRelu {
             x
         }
     }
-    #[inline(always)]
+    #[inline]
     fn derivate(x: f32) -> f32 {
         (x >= 0.0) as u32 as f32 * 0.99 + 0.01
     }
