@@ -44,5 +44,5 @@ fn main() {
         println!("> Cost: {:.3}\n> Test accuracy: {:.1}", cost / test_input.len() as f32, correct as f32 / test_input.len() as f32 * 100.0);
         println!();
     }
-    network.save("./network.bin").expect("couldn't save");
+    network.save("./network_dense.bin").expect("couldn't save");
 }
