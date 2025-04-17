@@ -2,11 +2,12 @@ use std::time::Instant;
 
 use raylib::prelude::*;
 
+#[allow(unused_imports)]
 use convoluted::{activation::sigmoid::Sigmoid, array::Array1D, cost::CrossEntropy, layer::{bias::BiasLayer, convolution::Convolution, dense::DenseLayer, pooling::MaxPooling, reshape::{Flatten, Shape}, LayerChain}};
 use serde::{Deserialize, Serialize};
 
-// type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<DenseLayer<{ 28*28 }, 100>, (), Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, DenseLayer<100, 10>, Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, CrossEntropy, Array1D<10>, usize>;
-type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<Shape<784, 28, 28>, (), Array1D<784>>, Convolution<5>, Array1D<784>>, BiasLayer<28, 28>, Array1D<784>>, Sigmoid, Array1D<784>>, MaxPooling<2, 14, 14>, Array1D<784>>, Convolution<3>, Array1D<784>>, BiasLayer<14, 14>, Array1D<784>>, Sigmoid, Array1D<784>>, Flatten<{ 14*14 }, 14, 14>, Array1D<784>>, DenseLayer<{ 14*14 }, 64>, Array1D<784>>, Sigmoid, Array1D<784>>, DenseLayer<64, 10>, Array1D<784>>, Sigmoid, Array1D<784>>, CrossEntropy, Array1D<10>, usize>;
+type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<DenseLayer<{ 28*28 }, 100>, (), Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, DenseLayer<100, 10>, Array1D<{ 28*28 }>>, Sigmoid, Array1D<{ 28*28 }>>, CrossEntropy, Array1D<10>, usize>;
+// type Network = convoluted::Network<Array1D<{ 28*28 }>, LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<LayerChain<Shape<784, 28, 28>, (), Array1D<784>>, Convolution<5>, Array1D<784>>, BiasLayer<28, 28>, Array1D<784>>, Sigmoid, Array1D<784>>, MaxPooling<2, 14, 14>, Array1D<784>>, Convolution<3>, Array1D<784>>, BiasLayer<14, 14>, Array1D<784>>, Sigmoid, Array1D<784>>, Flatten<{ 14*14 }, 14, 14>, Array1D<784>>, DenseLayer<{ 14*14 }, 64>, Array1D<784>>, Sigmoid, Array1D<784>>, DenseLayer<64, 10>, Array1D<784>>, Sigmoid, Array1D<784>>, CrossEntropy, Array1D<10>, usize>;
 
 const PIXEL_SIZE: usize = 20;
 
@@ -25,7 +26,7 @@ impl Default for Config {
 
 fn main() {
     let config = load_cfg();
-    let network = Network::load("network.bin").unwrap();
+    let network = Network::load("network_dense.bin").unwrap();
     let (mut rl, rt) = init()
         .title("MNIST classifier")
         .size(0, 0)
@@ -48,13 +49,20 @@ fn main() {
             paintbrush(drawing_area.as_mut_slice(), pos.x, pos.y, config.brush_size);
             last_interaction = Instant::now();
         }
-        if rl.is_key_pressed(KeyboardKey::KEY_DELETE) || (config.auto_clear && last_interaction.elapsed().as_secs_f64() >= 2.0) {
+        if rl.is_key_pressed(KeyboardKey::KEY_DELETE) || (config.auto_clear && last_interaction.elapsed().as_secs_f64() >= 3.0) {
             drawing_area = Array1D::new();
         }
 
         let result = network.forward(drawing_area.clone()).0;
         let mut d = rl.begin_drawing(&rt);
         d.clear_background(Color::new(16, 16, 16, 255));
+        
+        let drawing_area_clear = !drawing_area.iter().any(|x| *x != 0.0);
+        if drawing_area_clear {
+            let text = "Draw a number 0-9";
+            let text_length = d.measure_text(text, 80);
+            d.draw_text(text, (width/2) as i32 - text_length/2, (height/2) as i32 - 14 * PIXEL_SIZE as i32 - 120, 80, Color::WHITE);
+        }
 
         for y in 0..28 {
             for x in 0..28 {
@@ -63,17 +71,19 @@ fn main() {
             }
         }
 
-        if drawing_area.iter().any(|x| *x != 0.0) {
+        if !drawing_area_clear {
             let mut sorted: Vec<_> = result.iter().enumerate().collect();
             if config.sorted {
                 sorted.sort_by(|x, y| y.1.partial_cmp(x.1).unwrap());
             }
             let sum: f32 = sorted.iter().map(|x| x.1).sum();
             for (i, (number, chance)) in sorted.iter().enumerate() {
-                d.draw_text(&format!("{}: {:.2}%", number, *chance / sum * 100.0), width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 30, Color::WHITE);
+                let chance = **chance / sum;
+                d.draw_text(&format!("{}: {:.2}%", number, chance * 100.0), width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 30, Color::WHITE);
                 if config.chance_bars {
                     d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5, 100, 20, Color::GRAY);
-                    d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5,(**chance * 100.0) as i32, 20, Color::WHITE);
+                    let color = Color::new(255, 0, 0, 255).lerp(Color::new(0, 255, 0, 255), chance);
+                    d.draw_rectangle(width as i32 / 2 + 14 * PIXEL_SIZE as i32 + 20 + 150, 40 * i as i32 + height as i32 / 2 - 40 * 5 + 5,(chance * 100.0) as i32, 20, color);
                 }
             }
         }
