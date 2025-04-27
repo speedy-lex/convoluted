@@ -1,4 +1,4 @@
-use convoluted::{activation::sigmoid::Sigmoid, array::Array1D, cost::{CostFunction, Mse}, layer::{dense::DenseLayer, LayerChain}, Network};
+use convoluted::{activation::sigmoid::Sigmoid, array::Array1D, cost::{CostFunction, Mse}, layer::{dense::DenseLayer, LayerChain}, layer_chain, Network};
 
 use raylib::prelude::*;
 
@@ -6,10 +6,12 @@ use rand::{rng, rngs::ThreadRng, Rng};
 
 fn main() {
     let mut network = Network::<Array1D<2>, _, Mse, Array1D<1>, Array1D<1>>::new(
-        LayerChain::new(DenseLayer::random())
-            .push(Sigmoid::new())
-            .push(DenseLayer::<4, 1>::random())
-            .push(Sigmoid::new())
+        layer_chain!(
+            DenseLayer::random(),
+            Sigmoid::new(),
+            DenseLayer::<4, 1>::random(),
+            Sigmoid::new()
+        )
     );
     let mut rng = rng();
     let mut data = vec![];
@@ -75,20 +77,22 @@ fn main() {
         }
         if new_dataset || rl.is_key_pressed(KeyboardKey::KEY_R) {
             network = Network::new(
-                LayerChain::new(DenseLayer::random())
-                    .push(Sigmoid::new())
-                    .push(DenseLayer::<4, 1>::random())
-                    .push(Sigmoid::new())
+                layer_chain!(
+                    DenseLayer::random(),
+                    Sigmoid::new(),
+                    DenseLayer::<4, 1>::random(),
+                    Sigmoid::new()
+                )
             );
         }
 
-        shader.set_shader_value(bias1, network.layer.step.next.biases[0]);
-        shader.set_shader_value(weights1, network.layer.step.next.weights.array.as_ref()[0]);
-        shader.set_shader_value(biases0, *network.layer.step.step.step.step.biases.array.as_ref());
-        shader.set_shader_value(weights00, network.layer.step.step.step.step.weights[0]);
-        shader.set_shader_value(weights01, network.layer.step.step.step.step.weights[1]);
-        shader.set_shader_value(weights02, network.layer.step.step.step.step.weights[2]);
-        shader.set_shader_value(weights03, network.layer.step.step.step.step.weights[3]);
+        shader.set_shader_value(bias1, network.layer.next.next.step.biases[0]);
+        shader.set_shader_value(weights1, network.layer.next.next.step.weights.array.as_ref()[0]);
+        shader.set_shader_value(biases0, *network.layer.step.biases.array.as_ref());
+        shader.set_shader_value(weights00, network.layer.step.weights[0]);
+        shader.set_shader_value(weights01, network.layer.step.weights[1]);
+        shader.set_shader_value(weights02, network.layer.step.weights[2]);
+        shader.set_shader_value(weights03, network.layer.step.weights[3]);
         
         let mut d = rl.begin_drawing(&rt);
         d.begin_shader_mode(&mut shader).draw_rectangle(0, 0, width as i32, height as i32, Color::WHITE);
