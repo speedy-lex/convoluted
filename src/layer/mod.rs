@@ -46,21 +46,19 @@ pub struct LayerChain<S, N, I> {
     pub _marker: PhantomData<I>,
 }
 
-impl<S, I> LayerChain<S, (), I> {
-    pub fn new(step: S) -> Self {
-        Self {
-            step,
-            next: (),
-            _marker: PhantomData,
-        }
-    }
-}
 impl<S, N, I> LayerChain<S, N, I> where S: Layer<I>, N: Layer<S::Output> {
     pub fn push<T: Layer<N::Output>>(self, next: T) -> LayerChain<LayerChain<S, N, I>, T, I> {
         LayerChain {
             step: self,
             next,
             _marker: PhantomData::<I>,
+        }
+    }
+    pub fn new(step: S, next: N) -> Self {
+        Self {
+            step,
+            next,
+            _marker: PhantomData,
         }
     }
 }
@@ -92,4 +90,17 @@ where
         self.step.apply_gradients(gradients.0, multiplier);
         self.next.apply_gradients(gradients.1, multiplier);
     }
+}
+
+#[macro_export]
+macro_rules! layer_chain {
+    ($a:expr) => {
+        $a
+    };
+    ($a:expr, $b:expr) => {
+        LayerChain::new($a, $b)
+    };
+    ($a:expr, $($tail:expr),+) => {
+        LayerChain::new($a, layer_chain!($($tail),+))
+    };
 }

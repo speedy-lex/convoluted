@@ -14,7 +14,7 @@ use rand::{rng, seq::SliceRandom};
 
 fn main() {
     let mut network = Network::<Array1D<{ 28*28 }>, _, CrossEntropy, Array1D<10>, _>::new(
-        LayerChain::new(Shape::<784, 28, 28>{})
+        LayerChain::new(Shape::<784, 28, 28>{}, ())
             .push(Convolution::<5>::random())
             .push(BiasLayer::<28, 28>::random())
             .push(Sigmoid::new())

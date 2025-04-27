@@ -10,7 +10,7 @@ use rand::{rng, seq::SliceRandom};
 
 fn main() {
     let mut network = Network::<Array1D<{ 28*28 }>, _, CrossEntropy, Array1D<10>, _>::new(
-        LayerChain::new(DenseLayer::<{ 28*28 }, 100>::random())
+        LayerChain::new(DenseLayer::<{ 28*28 }, 100>::random(), ())
             .push(Sigmoid::new())
             .push(DenseLayer::<100, 10>::random())
             .push(Sigmoid::new())
