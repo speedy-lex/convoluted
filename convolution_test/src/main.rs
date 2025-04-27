@@ -3,15 +3,17 @@ use convoluted::cost::{CostFunction, CrossEntropy};
 use convoluted::layer::dense::DenseLayer;
 use convoluted::layer::reshape::{Flatten, Shape};
 use convoluted::layer::LayerChain;
-use convoluted::Network;
+use convoluted::{layer_chain, Network};
 use convoluted::layer::convolution::Convolution;
 
 fn main() {
     let mut network = Network::<_, _, CrossEntropy, Array1D<4>, usize>::new(
-        LayerChain::new(DenseLayer::<2, 4>::new())
-            .push(Shape::<4, 2, 2>{})
-            .push(Convolution::<3>::random())
-            .push(Flatten::<4, 2, 2>{})
+        layer_chain!(
+            DenseLayer::<2, 4>::new(),
+            Shape::<4, 2, 2>{},
+            Convolution::<3>::random(),
+            Flatten::<4, 2, 2>{}
+        ),
     );
 
     let data = vec![
